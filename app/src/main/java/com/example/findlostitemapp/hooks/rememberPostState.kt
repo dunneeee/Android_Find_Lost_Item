@@ -3,10 +3,12 @@ package com.example.findlostitemapp.hooks
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.findlostitemapp.api.PostServices
 import com.example.findlostitemapp.domain.model.Http
 import com.example.findlostitemapp.domain.model.Post
+import com.example.findlostitemapp.domain.model.SearchData
 import com.example.findlostitemapp.exceptions.ApiExceptions
 import com.example.findlostitemapp.exceptions.AuthExceptions
 import com.example.findlostitemapp.exceptions.PostExceptions
@@ -173,6 +175,44 @@ fun rememberUploadPostState(): UploadPostState {
 
     return remember(state) {
         UploadPostState(
+            state = state,
+            execute = ::execute
+        )
+    }
+}
+
+data class SearchPostState(
+    val state: ApiState<List<Post.Instance>>,
+    val execute: (SearchData) -> Unit
+)
+
+@Composable
+fun rememberSearchPostState(): SearchPostState {
+    val state = rememberApiState<List<Post.Instance>>()
+    val services = PostServices.getInstance(LocalContext.current)
+    fun execute(searchData: SearchData) {
+        val mapQuery = mapOf(
+            "keyword" to searchData.item,
+            "location" to searchData.location,
+            "topic" to searchData.topic
+        )
+        state.execute {
+            try {
+                val res = services.searchPosts(mapQuery)
+                if (res.isSuccessful) {
+                    res.body()?.data ?: emptyList()
+                } else {
+                    throw ApiExceptions.InternalServerError()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    return remember(state) {
+        SearchPostState(
             state = state,
             execute = ::execute
         )

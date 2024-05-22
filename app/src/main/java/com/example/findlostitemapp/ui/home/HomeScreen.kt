@@ -42,6 +42,7 @@ import com.example.findlostitemapp.hooks.rememberRecommendedPostState
 import com.example.findlostitemapp.hooks.rememberUserCountState
 import com.example.findlostitemapp.navigation.LocalNavProvider
 import com.example.findlostitemapp.ui.MainLayout
+import com.example.findlostitemapp.ui.components.DataNotFound
 import com.example.findlostitemapp.ui.components.PostList
 import com.example.findlostitemapp.ui.components.SearchTopBar
 import com.example.findlostitemapp.ui.posts.PostsNavigation
@@ -114,7 +115,7 @@ fun HomeContent(modifier: Modifier = Modifier) {
     }
 
     LaunchedEffect(userCountState.state.type) {
-        if(userCountState.state.isSuccess) {
+        if (userCountState.state.isSuccess) {
             userCount = userCountState.state.data!!
         }
     }
@@ -183,14 +184,7 @@ fun HomeContent(modifier: Modifier = Modifier) {
                 if (postsState.state.isLoading) {
                     CircularProgressIndicator()
                 } else if (posts.isEmpty()) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "No data found",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Không có bài đăng nào")
+                    DataNotFound()
                 } else {
                     PostList(posts = posts)
                 }

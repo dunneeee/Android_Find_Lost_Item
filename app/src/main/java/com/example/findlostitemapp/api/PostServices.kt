@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.findlostitemapp.domain.model.Http
 import com.example.findlostitemapp.domain.model.Post
 import com.example.findlostitemapp.domain.model.PostPayload
+import com.example.findlostitemapp.domain.model.SearchData
 import com.example.findlostitemapp.domain.model.SinglePostPayload
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -16,6 +17,7 @@ import retrofit2.http.Part
 import retrofit2.http.PartMap
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 interface PostServices {
     @GET("posts/recommended")
@@ -35,6 +37,9 @@ interface PostServices {
     ):
             Response<SinglePostPayload>
 
+    @GET("posts/search")
+    suspend fun searchPosts(@QueryMap query: Map<String, String>): Response<PostPayload>
+    
     companion object {
         fun getInstance(context: Context): PostServices = ApiClient.getClient(context).create(PostServices::class.java)
     }

@@ -29,11 +29,12 @@ import androidx.compose.ui.unit.dp
 import com.example.findlostitemapp.domain.model.SearchData
 import com.example.findlostitemapp.hooks.rememberTopicSelectState
 import com.example.findlostitemapp.ui.components.OutlineSelectDropDown
+import com.example.findlostitemapp.ui.components.SelectOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostSearch(
-    modifier: Modifier = Modifier, onValueChange: (PostScreenSearch) -> Unit = {}, searchData: SearchData
+    modifier: Modifier = Modifier, onValueChange: (SearchData) -> Unit = {}, searchData: SearchData
 ) {
     val topicState = rememberTopicSelectState()
 
@@ -62,12 +63,16 @@ fun PostSearch(
 
     val handleSearchQueryChange = { value: String ->
         searchQuery = value
-        onValueChange(PostScreenSearch(value, currentLocation))
+        onValueChange(SearchData(value, currentLocation, topicState.selected.value))
     }
 
     val handleLocationChange = { value: String ->
         currentLocation = value
-        onValueChange(PostScreenSearch(searchQuery, value))
+        onValueChange(SearchData(searchQuery, value, topicState.selected.value))
+    }
+
+    val handleTopicChange = { value: SelectOption<String> ->
+        onValueChange(SearchData(searchQuery, currentLocation, value.value))
     }
 
     Column(modifier = modifier) {
@@ -127,7 +132,10 @@ fun PostSearch(
                         Icon(Icons.Default.Create, contentDescription = "List Icon")
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    onOptionSelected = topicState.handleSelect,
+                    onOptionSelected = {
+                        topicState.handleSelect(it)
+                        handleTopicChange(it)
+                    },
                     label = {
                         Text(text = "Chủ đề")
                     })
