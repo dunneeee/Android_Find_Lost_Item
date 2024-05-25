@@ -3,6 +3,7 @@ package com.example.findlostitemapp.hooks
 import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.findlostitemapp.api.TopicServices
 import com.example.findlostitemapp.domain.model.Post
@@ -36,7 +37,7 @@ fun rememberGetTopicState(): TopicState {
         }
     }
 
-    return remember {
+    return remember(state.type) {
         TopicState(
             state = state,
             execute = ::execute
@@ -91,6 +92,82 @@ fun rememberTopicSelectState(): TopicSelectState {
             selected = selected,
             options = options,
             handleSelect = handleSelect
+        )
+    }
+}
+
+data class TopicDeleteState(
+    val state: ApiState<Post.Topic>,
+    val execute: (String) -> Unit
+)
+
+@Composable
+fun rememberDeleteTopicState(): TopicDeleteState {
+    val state = rememberApiState<Post.Topic>()
+    val services = TopicServices.getInstance(LocalContext.current)
+
+    fun execute(id: String) {
+        state.execute {
+            try {
+                val res = services.deleteTopic(id)
+                if (res.isSuccessful) {
+                    res.body()?.data ?: throw ApiExceptions.InternalServerError()
+                } else {
+                    when (res.code()) {
+                        401 -> throw AuthExceptions.Unauthorized()
+                        404 -> throw ApiExceptions.NotFound()
+                        else -> throw ApiExceptions.InternalServerError()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    return remember(state) {
+        TopicDeleteState(
+            state = state,
+            execute = ::execute
+        )
+    }
+}
+
+
+data class TopicAddState(
+    val state: ApiState<Post.Topic>,
+    val execute: (String) -> Unit
+)
+
+@Composable
+fun rememberAddTopicState(): TopicAddState {
+    val state = rememberApiState<Post.Topic>()
+    val services = TopicServices.getInstance(LocalContext.current)
+
+    fun execute(topicName: String) {
+        state.execute {
+            try {
+                val res = services.addTopic(Post.TopicRequest(topicName))
+                if (res.isSuccessful) {
+                    res.body()?.data ?: throw ApiExceptions.InternalServerError()
+                } else {
+                    when (res.code()) {
+                        401 -> throw AuthExceptions.Unauthorized()
+                        else -> throw ApiExceptions.InternalServerError()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    return remember(state) {
+        TopicAddState(
+            state = state,
+            execute = ::execute
         )
     }
 }

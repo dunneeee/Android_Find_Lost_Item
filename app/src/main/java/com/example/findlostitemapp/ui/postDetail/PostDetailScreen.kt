@@ -1,7 +1,6 @@
 package com.example.findlostitemapp.ui.postDetail
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,12 +38,9 @@ import com.example.findlostitemapp.LocalSnackBar
 import com.example.findlostitemapp.domain.model.Post
 import com.example.findlostitemapp.hooks.rememberPostByIdState
 import com.example.findlostitemapp.hooks.rememberRecommendedPostState
-import com.example.findlostitemapp.providers.LocalNotification
 import com.example.findlostitemapp.ui.components.PostList
 import com.example.findlostitemapp.ui.components.SliderShow
 import com.example.findlostitemapp.ui.components.User
-import com.example.findlostitemapp.utils.FakeData
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

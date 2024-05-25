@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.findlostitemapp.ui.approvePost.ApprovePostNavigation
+import com.example.findlostitemapp.ui.topicManager.TopicManagerNavigation
 
 data class ProfileItemData(val represent: ProfileItem, val icon: ImageVector, val title: String) {
     enum class ProfileItem(val path: String) {
@@ -16,15 +18,15 @@ data class ProfileItemData(val represent: ProfileItem, val icon: ImageVector, va
         Settings("settings"),
         Logout("logout"),
         ManagerUser("managerUser"),
-        ManagerTopic("managerTopic"),
-        AcceptPost("acceptPost"),
+        ManagerTopic(TopicManagerNavigation.route.path),
+        ApprovePost(ApprovePostNavigation.route.path),
     }
 
     companion object {
         val adminItems = listOf(
             ProfileItemData(ProfileItem.ManagerUser, Icons.Filled.Person, "Quản lý người dùng"),
             ProfileItemData(ProfileItem.ManagerTopic, Icons.Filled.Edit, "Quản lý chủ đề"),
-            ProfileItemData(ProfileItem.AcceptPost, Icons.Filled.Check, "Duyệt bài đăng")
+            ProfileItemData(ProfileItem.ApprovePost, Icons.Filled.Check, "Phê duyệt bài đăng")
         )
         val items = listOf(
             ProfileItemData(ProfileItem.Profile, Icons.Filled.Person, "Trang cá nhân"),

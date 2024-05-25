@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.findlostitemapp.domain.model.Post
 import com.example.findlostitemapp.ui.theme.FindLostItemAppTheme
-import com.example.findlostitemapp.utils.FakeData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,8 +78,8 @@ fun Post(
                     (horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = post.content, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding
+            ExpandableText(
+                text = post.content, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding
                     (horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -124,18 +123,4 @@ fun Post(
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun PostPreview() {
-    FindLostItemAppTheme {
-        Post(post = FakeData.getRandPost())
-    }
-}
-
-@Preview
-@Composable
-private fun RowPostPreview() {
-
 }

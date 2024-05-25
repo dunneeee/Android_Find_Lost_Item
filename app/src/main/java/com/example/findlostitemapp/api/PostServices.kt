@@ -13,6 +13,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.PartMap
 import retrofit2.http.Path
@@ -39,7 +40,16 @@ interface PostServices {
 
     @GET("posts/search")
     suspend fun searchPosts(@QueryMap query: Map<String, String>): Response<PostPayload>
-    
+
+    @PUT("admin/posts/{uuid}/accept")
+    suspend fun acceptPost(@Path("uuid") uuid: String): Response<SinglePostPayload>
+
+    @PUT("admin/posts/{uuid}/reject")
+    suspend fun rejectPost(@Path("uuid") uuid: String): Response<SinglePostPayload>
+
+    @GET("admin/posts/pending")
+    suspend fun getPendingPosts(@Query("page") page: Int = 1, @Query("size") size: Int = 10): Response<PostPayload>
+
     companion object {
         fun getInstance(context: Context): PostServices = ApiClient.getClient(context).create(PostServices::class.java)
     }

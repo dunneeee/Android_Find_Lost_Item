@@ -19,8 +19,11 @@ class ApiState<T>() {
         private set
 
     //    val type get() = _type
-    val data: T?
+    var data: T?
         get() = (type as? ApiStateType.SUCCESS)?.data
+        set(value: T?) {
+            if(value != null) type = ApiStateType.SUCCESS(value)
+        }
     val error: Throwable? get() = (type as? ApiStateType.ERROR)?.throwable
     val isLoading: Boolean get() = type is ApiStateType.LOADING
     val isSuccess: Boolean get() = type is ApiStateType.SUCCESS

@@ -1,6 +1,5 @@
 package com.example.findlostitemapp.hooks
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -213,6 +212,103 @@ fun rememberSearchPostState(): SearchPostState {
 
     return remember(state) {
         SearchPostState(
+            state = state,
+            execute = ::execute
+        )
+    }
+}
+
+data class ChangeStatusPostState(
+    val state: ApiState<Post.Instance>,
+    val acceptPost: (String) -> Unit,
+    val rejectPost: (String) -> Unit
+)
+
+@Composable
+fun rememberChangeStatusPostState(): ChangeStatusPostState {
+    val state = rememberApiState<Post.Instance>()
+    val services = PostServices.getInstance(LocalContext.current)
+
+    fun acceptPost(uuid: String) {
+        state.execute {
+            try {
+                val res = services.acceptPost(uuid)
+                if (res.isSuccessful) {
+                    res.body()?.data ?: throw PostExceptions.PostNotFoundException()
+                } else {
+                    val error = Gson().fromJson<Http.Error<String>>(res.errorBody()?.string(), Http.Error::class.java)
+                    when (error.code) {
+                        401 -> throw AuthExceptions.Unauthorized()
+                        404 -> throw PostExceptions.PostNotFoundException()
+                        403 -> throw PostExceptions.CantAccessPostException()
+                        else -> throw ApiExceptions.InternalServerError()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    fun rejectPost(uuid: String) {
+        state.execute {
+            try {
+                val res = services.rejectPost(uuid)
+                if (res.isSuccessful) {
+                    res.body()?.data ?: throw PostExceptions.PostNotFoundException()
+                } else {
+                    val error = Gson().fromJson<Http.Error<String>>(res.errorBody()?.string(), Http.Error::class.java)
+                    when (error.code) {
+                        401 -> throw AuthExceptions.Unauthorized()
+                        404 -> throw PostExceptions.PostNotFoundException()
+                        403 -> throw PostExceptions.CantAccessPostException()
+                        else -> throw ApiExceptions.InternalServerError()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    return remember(state) {
+        ChangeStatusPostState(
+            state = state,
+            acceptPost = ::acceptPost,
+            rejectPost = ::rejectPost
+        )
+    }
+}
+
+data class GetPendingPostState(
+    val state: ApiState<List<Post.Instance>>,
+    val execute: () -> Unit
+)
+
+@Composable
+fun rememberGetPendingPostState(): GetPendingPostState {
+    val state = rememberApiState<List<Post.Instance>>()
+    val services = PostServices.getInstance(LocalContext.current)
+    fun execute() {
+        state.execute {
+            try {
+                val res = services.getPendingPosts()
+                if (res.isSuccessful) {
+                    res.body()?.data ?: emptyList()
+                } else {
+                    throw ApiExceptions.InternalServerError()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    return remember(state) {
+        GetPendingPostState(
             state = state,
             execute = ::execute
         )

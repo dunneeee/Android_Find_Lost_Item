@@ -24,12 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.findlostitemapp.navigation.LocalNavProvider
+import com.example.findlostitemapp.ui.approvePost.ApprovePostNavigation
 import com.example.findlostitemapp.ui.auth.AuthLocalStore
 import com.example.findlostitemapp.ui.auth.AuthNavigation
 import com.example.findlostitemapp.ui.components.User
 import com.example.findlostitemapp.ui.components.UserAvatarSize
 import com.example.findlostitemapp.ui.home.HomeNavigation
-import com.example.findlostitemapp.utils.FakeData
+import com.example.findlostitemapp.ui.topicManager.TopicManagerNavigation
 
 @Composable
 fun ProfileScreen(modifier: Modifier = Modifier) {
@@ -75,19 +76,10 @@ fun ProfileContent(modifier: Modifier = Modifier) {
 
     val handleProfileItemClick = { item: ProfileItemData ->
         when (item.represent) {
-            ProfileItemData.ProfileItem.Profile ->
-                println("Profile clicked")
-
-            ProfileItemData.ProfileItem.Settings ->
-                println("Settings clicked")
-
-            ProfileItemData.ProfileItem.Logout -> {
-                authStorage.clear()
-                navigation.navigate(AuthNavigation.loginRoute.path) {
-                    popUpTo(HomeNavigation.route.path)
-                }
-            }
-
+            ProfileItemData.ProfileItem.ManagerTopic ->
+                navigation.navigate(TopicManagerNavigation.route.path)
+            ProfileItemData.ProfileItem.ApprovePost ->
+                navigation.navigate(ApprovePostNavigation.route.path)
             else -> {
                 println("Unknown item clicked")
             }
