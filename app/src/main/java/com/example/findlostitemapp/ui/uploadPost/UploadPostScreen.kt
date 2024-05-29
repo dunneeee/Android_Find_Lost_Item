@@ -81,6 +81,10 @@ fun UploadPostScreenContent(modifier: Modifier = Modifier) {
 
     val selectedImages = rememberSaveable { mutableStateOf(emptyList<Uri>()) }
 
+    selectedImages.value.forEach {
+        println(it.path)
+    }
+
     val onImagesSelected: (List<Uri>) -> Unit = {
         selectedImages.value += it
         selectedImages.value.distinct()
