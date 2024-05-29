@@ -132,17 +132,11 @@ fun rememberUploadPostState(): UploadPostState {
     val state = rememberApiState<Post.Instance>()
     val services = PostServices.getInstance(LocalContext.current)
     fun execute(upload: Post.Upload) {
-        val data = mapOf(
-            "title" to upload.title,
-            "content" to upload.content,
-            "location" to upload.location,
-            "topic" to upload.topic
-        )
         val images = upload.images
         state.execute {
             try {
                 val res = services.addPost(
-                    data.mapValues { (_, value) -> value.toRequestBody() },
+                    upload.toMap(),
                     images.map {
                         val file = FileUtils.uriToFile(context, it, it.lastPathSegment)
                             ?: File("")
@@ -159,6 +153,7 @@ fun rememberUploadPostState(): UploadPostState {
                 } else {
                     val error = Gson().fromJson<Http.Error<String>>(res.errorBody()?.string(), Http.Error::class.java)
                     when (error.code) {
+                        400 -> throw PostExceptions.MissingFieldException(error.error)
                         401 -> throw AuthExceptions.Unauthorized()
                         404 -> throw PostExceptions.PostNotFoundException()
                         403 -> throw PostExceptions.CantAccessPostException()
@@ -190,14 +185,10 @@ fun rememberSearchPostState(): SearchPostState {
     val state = rememberApiState<List<Post.Instance>>()
     val services = PostServices.getInstance(LocalContext.current)
     fun execute(searchData: SearchData) {
-        val mapQuery = mapOf(
-            "keyword" to searchData.item,
-            "location" to searchData.location,
-            "topic" to searchData.topic
-        )
+
         state.execute {
             try {
-                val res = services.searchPosts(mapQuery)
+                val res = services.searchPosts(searchData.toMap())
                 if (res.isSuccessful) {
                     res.body()?.data ?: emptyList()
                 } else {

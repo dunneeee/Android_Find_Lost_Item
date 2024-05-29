@@ -31,6 +31,7 @@ import com.example.findlostitemapp.ui.components.User
 import com.example.findlostitemapp.ui.components.UserAvatarSize
 import com.example.findlostitemapp.ui.home.HomeNavigation
 import com.example.findlostitemapp.ui.topicManager.TopicManagerNavigation
+import com.example.findlostitemapp.ui.userManager.UserManagerNavigation
 
 @Composable
 fun ProfileScreen(modifier: Modifier = Modifier) {
@@ -65,7 +66,7 @@ fun ProfileContent(modifier: Modifier = Modifier) {
 
     val items = remember {
         val list = mutableListOf<ProfileItemData>()
-        if(user != null && user.isAdmin) {
+        if (user != null && user.isAdmin) {
             list.addAll(ProfileItemData.adminItems)
         }
         list.addAll(ProfileItemData.items)
@@ -78,8 +79,22 @@ fun ProfileContent(modifier: Modifier = Modifier) {
         when (item.represent) {
             ProfileItemData.ProfileItem.ManagerTopic ->
                 navigation.navigate(TopicManagerNavigation.route.path)
+
             ProfileItemData.ProfileItem.ApprovePost ->
                 navigation.navigate(ApprovePostNavigation.route.path)
+
+            ProfileItemData.ProfileItem.ManagerUser ->
+                navigation.navigate(UserManagerNavigation.route.path)
+
+            ProfileItemData.ProfileItem.Logout -> {
+                authStorage.logout()
+                navigation.navigate(HomeNavigation.route.path) {
+                    popUpTo(HomeNavigation.route.path) {
+                        inclusive = true
+                    }
+                }
+            }
+
             else -> {
                 println("Unknown item clicked")
             }

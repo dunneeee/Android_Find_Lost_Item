@@ -24,6 +24,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.findlostitemapp.domain.model.NotificationArgs
@@ -35,6 +36,7 @@ import com.example.findlostitemapp.ui.components.CustomButton
 import com.example.findlostitemapp.ui.components.CustomTextField
 import com.example.findlostitemapp.ui.home.HomeNavigation
 import com.example.findlostitemapp.hooks.rememberFormState
+import com.example.findlostitemapp.hooks.rememberLoginState
 import com.example.findlostitemapp.hooks.rememberRegisterState
 import java.io.File
 
@@ -52,10 +54,10 @@ fun RegisterContent(modifier: Modifier = Modifier) {
     {
         it.text.isNotEmpty()
     }
-
     val registerState = rememberRegisterState()
+    val loginState = rememberLoginState()
+    val authStore = AuthLocalStore(LocalContext.current)
     val notifyState = LocalNotification.current
-
     val navigation = LocalNavProvider.current
 
     val handleLoginClicked = {
@@ -83,17 +85,14 @@ fun RegisterContent(modifier: Modifier = Modifier) {
 
     LaunchedEffect(registerState.state.type) {
         if (registerState.state.isSuccess) {
-            notifyState.showNotification(
-                NotificationArgs(
-                    title = "Đăng ký thành công",
-                    content = {
-                        Text(text = "Đăng ký thành công, quay lại trang đăng nhập!")
-                    },
-                    onConfirm = {
-                        navigation.navigate(AuthNavigation.loginRoute.path)
-                    },
-                )
-            )
+            val username = formState.getValue(AuthValidators.Keys.USERNAME).text
+            val password = formState.getValue(AuthValidators.Keys.PASSWORD).text
+            loginState.execute(User.Login(username, password))
+            navigation.navigate(AuthNavigation.uploadAvatarRoute.path) {
+                popUpTo(HomeNavigation.route.path) {
+                    inclusive = true
+                }
+            }
         }
 
         if (registerState.state.isError) {
@@ -110,93 +109,125 @@ fun RegisterContent(modifier: Modifier = Modifier) {
         }
     }
 
+    LaunchedEffect(loginState.state.type) {
+        if (loginState.state.isError) {
+            val error = loginState.state.error
+            notifyState.showNotification(
+                NotificationArgs(
+                    title = "Đăng nhập thất bại",
+                    content = {
+                        Text(text = error?.message ?: "Đã có lỗi xảy ra")
+                    },
+                    dismissText = "Đóng"
+                )
+            )
+        }
+
+        if (loginState.state.isSuccess) {
+            authStore.saveToken(loginState.token)
+            val user = loginState.state.data!!
+            authStore.saveUser(user)
+            navigation.navigate(AuthNavigation.uploadAvatarRoute.path)
+        }
+    }
+
     LaunchedEffect(Unit) {
         formState.registerField(AuthValidators.registerValidator)
     }
-
-    Surface(modifier) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box {
+    if (loginState.state.isLoading) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 AppLogo()
             }
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Đăng ký",
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                CustomTextField(
-                    value = formState.getValue(AuthValidators.Keys.USERNAME), onValueChange = {
-                        formState.setValue(AuthValidators.Keys.USERNAME, it)
-                    }, label = "Tên" +
-                            " đăng " +
-                            "nhập",
-                    error = formState.getError(AuthValidators.Keys.USERNAME),
-                    leadingIcon = {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Account Icon")
-                    }
-                )
-                CustomTextField(
-                    value = formState.getValue(AuthValidators.Keys.EMAIL), onValueChange = {
-                        formState.setValue(AuthValidators.Keys.EMAIL, it)
-                    },
-                    label = "Email", error = formState.getError(AuthValidators.Keys.EMAIL),
-                    leadingIcon = {
-                        Icon(Icons.Default.MailOutline, contentDescription = "Account Icon")
-                    }
-                )
-                CustomTextField(
-                    value = formState.getValue(AuthValidators.Keys.PASSWORD),
-                    onValueChange = {
-                        formState.setValue(
-                            AuthValidators.Keys.PASSWORD,
-                            it
-                        )
-                    },
-                    label = "Mật khẩu",
-                    isPassword = true,
-                    error = formState.getError(AuthValidators.Keys.PASSWORD),
-                    leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = "Account Icon")
-                    }
-                )
-                CustomTextField(
-                    value = formState.getValue(AuthValidators.Keys.CONFIRM_PASSWORD),
-                    onValueChange = {
-                        formState.setValue(
-                            AuthValidators.Keys.CONFIRM_PASSWORD,
-                            it
-                        )
-                    },
-                    label = "Nhập lại mật khẩu",
-                    isPassword = true,
-                    error = formState.getError(AuthValidators.Keys.CONFIRM_PASSWORD),
-                    leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = "Account Icon")
-                    },
-                    isLasted = true
-
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                CustomButton(
-                    onClick = handleRegisterClicked,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = isEnable.value
-                ) {
-                    Text(text = "Đăng ký")
-                }
-            }
-
-            OutlinedButton(onClick = handleLoginClicked, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Đã có tài khoản? Đăng nhập")
-            }
-
         }
-    }
+    } else
+        Surface(modifier) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box {
+                    AppLogo()
+                }
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Đăng ký",
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    CustomTextField(
+                        value = formState.getValue(AuthValidators.Keys.USERNAME), onValueChange = {
+                            formState.setValue(AuthValidators.Keys.USERNAME, it)
+                        }, label = "Tên" +
+                                " đăng " +
+                                "nhập",
+                        error = formState.getError(AuthValidators.Keys.USERNAME),
+                        leadingIcon = {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Account Icon")
+                        }
+                    )
+                    CustomTextField(
+                        value = formState.getValue(AuthValidators.Keys.EMAIL), onValueChange = {
+                            formState.setValue(AuthValidators.Keys.EMAIL, it)
+                        },
+                        label = "Email", error = formState.getError(AuthValidators.Keys.EMAIL),
+                        leadingIcon = {
+                            Icon(Icons.Default.MailOutline, contentDescription = "Account Icon")
+                        }
+                    )
+                    CustomTextField(
+                        value = formState.getValue(AuthValidators.Keys.PASSWORD),
+                        onValueChange = {
+                            formState.setValue(
+                                AuthValidators.Keys.PASSWORD,
+                                it
+                            )
+                        },
+                        label = "Mật khẩu",
+                        isPassword = true,
+                        error = formState.getError(AuthValidators.Keys.PASSWORD),
+                        leadingIcon = {
+                            Icon(Icons.Default.Lock, contentDescription = "Account Icon")
+                        }
+                    )
+                    CustomTextField(
+                        value = formState.getValue(AuthValidators.Keys.CONFIRM_PASSWORD),
+                        onValueChange = {
+                            formState.setValue(
+                                AuthValidators.Keys.CONFIRM_PASSWORD,
+                                it
+                            )
+                        },
+                        label = "Nhập lại mật khẩu",
+                        isPassword = true,
+                        error = formState.getError(AuthValidators.Keys.CONFIRM_PASSWORD),
+                        leadingIcon = {
+                            Icon(Icons.Default.Lock, contentDescription = "Account Icon")
+                        },
+                        isLasted = true
+
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CustomButton(
+                        onClick = handleRegisterClicked,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = isEnable.value
+                    ) {
+                        Text(text = "Đăng ký")
+                    }
+                }
+
+                OutlinedButton(onClick = handleLoginClicked, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "Đã có tài khoản? Đăng nhập")
+                }
+
+            }
+        }
 }

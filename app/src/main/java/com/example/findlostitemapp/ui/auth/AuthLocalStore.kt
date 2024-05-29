@@ -49,4 +49,8 @@ class AuthLocalStore(context: Context) {
         val basicToken = getToken() ?: return null
         return Base64.getEncoder().encodeToString(basicToken.toByteArray())
     }
+
+    fun logout() {
+        clear()
+    }
 }

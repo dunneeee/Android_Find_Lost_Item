@@ -2,7 +2,6 @@ package com.example.findlostitemapp.ui.auth
 
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -22,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -29,23 +29,60 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.findlostitemapp.R
+import com.example.findlostitemapp.LocalSnackBar
+import com.example.findlostitemapp.domain.model.NotificationArgs
+import com.example.findlostitemapp.hooks.rememberChangeUserAvatarState
 import com.example.findlostitemapp.hooks.rememberImageResultLauncher
+import com.example.findlostitemapp.navigation.LocalNavProvider
+import com.example.findlostitemapp.providers.LocalNotification
+import com.example.findlostitemapp.ui.home.HomeNavigation
 import com.example.findlostitemapp.ui.theme.FindLostItemAppTheme
 
 @Composable
 fun AvatarUploadScreen() {
+    val uploadState = rememberChangeUserAvatarState()
+    val navigation = LocalNavProvider.current
+    val notifyState = LocalNotification.current
+    val snackBarState = LocalSnackBar.current
+    val handleUploadAvatar = { uri: Uri? ->
+        if (uri != null) {
+            uploadState.execute(uri)
+        } else {
+            navigation.navigate(HomeNavigation.route.path)
+        }
+
+    }
+
+    LaunchedEffect(key1 = uploadState.state) {
+        if (uploadState.state.isError) {
+            notifyState.showNotification(NotificationArgs(
+                title = "Có lỗi xảy ra khi tải ảnh lên",
+                content = {
+                    Text(text = uploadState.state.error?.message ?: "Có lỗi xảy ra khi tải ảnh lên")
+                }
+            ))
+            navigation.navigate(HomeNavigation.route.path)
+        }
+
+        if (uploadState.state.isSuccess) {
+            snackBarState.showSnackbar("Tải ảnh lên thành công", duration = SnackbarDuration.valueOf("2000"))
+            navigation.navigate(HomeNavigation.route.path)
+        }
+
+    }
+
     Scaffold(topBar = {
         AvatarUploadTopBar()
     }) { paddingValues ->
         AvatarUploadContent(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            onUploadClick = handleUploadAvatar,
+            isUploading = uploadState.state.isLoading
         )
     }
 }
@@ -54,9 +91,9 @@ fun AvatarUploadScreen() {
 @Composable
 fun AvatarUploadContent(
     modifier: Modifier = Modifier, onImageSelected: (Uri?) -> Unit = {}, onUploadClick: (Uri?) ->
-    Unit = {}
+    Unit = {},
+    isUploading: Boolean = false
 ) {
-
     var imageSelected by remember {
         mutableStateOf<Uri?>(null)
     }
@@ -87,7 +124,11 @@ fun AvatarUploadContent(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { onUploadClick(imageSelected) }, modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = { onUploadClick(imageSelected) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isUploading
+            ) {
                 Text(text = "Tải ảnh lên")
             }
         }

@@ -47,7 +47,8 @@ fun User(
         Box(
             modifier = Modifier
                 .size(avatarSize.value)
-                .clip(CircleShape).clickable { onClick() },
+                .clip(CircleShape)
+                .clickable { onClick() },
 
         ) {
             AsyncImage(

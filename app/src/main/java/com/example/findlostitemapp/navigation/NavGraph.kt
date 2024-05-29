@@ -12,10 +12,11 @@ import com.example.findlostitemapp.ui.posts.PostsNavigation
 import com.example.findlostitemapp.ui.profile.ProfileNavigation
 import com.example.findlostitemapp.ui.topicManager.TopicManagerNavigation
 import com.example.findlostitemapp.ui.uploadPost.UploadPostNavigation
+import com.example.findlostitemapp.ui.userManager.UserManagerNavigation
 
 @Composable
 fun NavGraph(modifier: Modifier, navController: NavHostController) {
-    NavHost(navController = navController, startDestination = ApprovePostNavigation.route.path, modifier = modifier) {
+    NavHost(navController = navController, startDestination = HomeNavigation.route.path, modifier = modifier) {
         HomeNavigation.addNavigation(this)
         PostsNavigation.addNavigation(this)
         ProfileNavigation.addNavigation(this)
@@ -24,5 +25,6 @@ fun NavGraph(modifier: Modifier, navController: NavHostController) {
         PostDetailNavigation.addNavigation(this)
         TopicManagerNavigation.addNavigation(this)
         ApprovePostNavigation.addNavigation(this)
+        UserManagerNavigation.addNavigation(this)
     }
 }

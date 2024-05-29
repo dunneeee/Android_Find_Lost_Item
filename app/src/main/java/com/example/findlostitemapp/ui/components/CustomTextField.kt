@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import kotlin.reflect.jvm.internal.impl.types.checker.TypeRefinementSupport.Enabled
 
 enum class CustomTextFieldType {
     Default,
@@ -39,7 +40,8 @@ fun CustomTextField(
     colors: TextFieldColors? = null,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
-    isLasted: Boolean = false
+    isLasted: Boolean = false,
+    enabled: Boolean = true
 ) {
     Column {
         when (type) {
@@ -60,7 +62,8 @@ fun CustomTextField(
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
                     colors = colors ?: TextFieldDefaults.colors(),
-                    singleLine = singleLine
+                    singleLine = singleLine,
+                    enabled = enabled
                 )
             }
 
@@ -80,7 +83,8 @@ fun CustomTextField(
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
                     colors = colors ?: OutlinedTextFieldDefaults.colors(),
-                    singleLine = singleLine
+                    singleLine = singleLine,
+                    enabled = enabled
                 )
             }
         }

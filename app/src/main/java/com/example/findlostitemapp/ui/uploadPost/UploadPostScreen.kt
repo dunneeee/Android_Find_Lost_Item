@@ -67,7 +67,6 @@ fun UploadPostScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun UploadPostScreenContent(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     val notifyState = LocalNotification.current
     val navigation = LocalNavProvider.current
 
