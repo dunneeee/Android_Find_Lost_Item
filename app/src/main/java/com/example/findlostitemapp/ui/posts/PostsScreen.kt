@@ -97,6 +97,6 @@ fun PostsContent(modifier: Modifier = Modifier, searchQuery: SearchData) {
 @Composable
 fun PostsTopBar(modifier: Modifier = Modifier) {
     TopAppBar(title = {
-        Text(text = "Posts")
+        Text(text = "Bài đăng")
     }, modifier = modifier)
 }

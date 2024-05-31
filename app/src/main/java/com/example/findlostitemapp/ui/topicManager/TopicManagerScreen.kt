@@ -189,7 +189,7 @@ fun TopicManagerContent(modifier: Modifier = Modifier) {
 @Composable
 fun TopicManagerTopBar(modifier: Modifier = Modifier) {
     TopAppBar(title = {
-        Text(text = "Topic Manager")
+        Text(text = "Quản lý chủ đề")
     }, modifier = modifier)
 }
 
