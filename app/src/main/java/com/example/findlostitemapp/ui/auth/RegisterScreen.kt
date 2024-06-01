@@ -88,11 +88,6 @@ fun RegisterContent(modifier: Modifier = Modifier) {
             val username = formState.getValue(AuthValidators.Keys.USERNAME).text
             val password = formState.getValue(AuthValidators.Keys.PASSWORD).text
             loginState.execute(User.Login(username, password))
-            navigation.navigate(AuthNavigation.uploadAvatarRoute.path) {
-                popUpTo(HomeNavigation.route.path) {
-                    inclusive = true
-                }
-            }
         }
 
         if (registerState.state.isError) {

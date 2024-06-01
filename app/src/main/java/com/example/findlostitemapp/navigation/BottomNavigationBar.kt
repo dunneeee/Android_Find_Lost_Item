@@ -35,7 +35,7 @@ fun BottomNavigationBar(modifier: Modifier = Modifier, navController: NavHostCon
                 Icon(navItem.icon, contentDescription = navItem.label)
             }, label = {
                 Text(text = navItem.label)
-            })
+            }, enabled = true)
         }
     }
 }

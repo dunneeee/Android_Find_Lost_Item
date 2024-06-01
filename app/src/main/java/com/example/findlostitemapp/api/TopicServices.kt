@@ -22,7 +22,7 @@ interface TopicServices {
 
     @DELETE("topic/{id}")
     suspend fun deleteTopic(@Path("id") topicId: String): Response<SingleTopicPayload>
-
+    
     companion object {
         fun getInstance(context: Context): TopicServices =
             ApiClient.getClient(context).create(TopicServices::class.java)

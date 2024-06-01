@@ -56,7 +56,7 @@ fun AvatarUploadScreen() {
 
     }
 
-    LaunchedEffect(key1 = uploadState.state) {
+    LaunchedEffect(key1 = uploadState.state.type) {
         if (uploadState.state.isError) {
             notifyState.showNotification(NotificationArgs(
                 title = "Có lỗi xảy ra khi tải ảnh lên",
