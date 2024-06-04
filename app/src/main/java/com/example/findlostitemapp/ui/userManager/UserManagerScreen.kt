@@ -28,6 +28,7 @@ import com.example.findlostitemapp.domain.model.User
 import com.example.findlostitemapp.hooks.rememberAddUserState
 import com.example.findlostitemapp.hooks.rememberDeleteUserState
 import com.example.findlostitemapp.hooks.rememberGetUsers
+import com.example.findlostitemapp.hooks.rememberUploadUserState
 import com.example.findlostitemapp.providers.LocalNotification
 import com.example.findlostitemapp.ui.MainLayout
 import com.example.findlostitemapp.ui.components.DataNotFound
@@ -47,6 +48,7 @@ fun UserManagerContent(modifier: Modifier = Modifier) {
     val getUserState = rememberGetUsers()
     val deleteUserState = rememberDeleteUserState()
     val addUserState = rememberAddUserState()
+    val updateUserState = rememberUploadUserState()
 
 
     var openModifierUser by remember {
@@ -82,6 +84,8 @@ fun UserManagerContent(modifier: Modifier = Modifier) {
     val handleConfirmUserModifier = { user: User.Register ->
         if (userWasEdit == null) {
             addUserState.execute(user)
+        } else {
+            updateUserState.execute(userWasEdit!!.uuid, user)
         }
     }
 
@@ -135,6 +139,27 @@ fun UserManagerContent(modifier: Modifier = Modifier) {
             }
             snackBarState.showSnackbar(
                 message = "Thêm người dùng thành công"
+            )
+        }
+    }
+
+    LaunchedEffect(updateUserState.state.type) {
+        if (updateUserState.state.isError) {
+            snackBarState.showSnackbar(
+                message = updateUserState.state.error?.message ?: "Có lỗi xảy ra khi cập nhật người dùng"
+            )
+        }
+
+        if (updateUserState.state.isSuccess) {
+            launch {
+                val user = updateUserState.state.data!!
+                getUserState.state.data = getUserState.state.data?.toMutableList()?.apply {
+                    val index = indexOfFirst { it.uuid == user.uuid }
+                    set(index, user)
+                }
+            }
+            snackBarState.showSnackbar(
+                message = "Cập nhật người dùng thành công"
             )
         }
     }

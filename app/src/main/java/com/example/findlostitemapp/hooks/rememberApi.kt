@@ -30,7 +30,7 @@ class ApiState<T>() {
     val isError: Boolean get() = type is ApiStateType.ERROR
     val isIdle: Boolean get() = type is ApiStateType.IDLE
 
-    fun execute(block: suspend () -> T) {
+    fun execute(block: suspend CoroutineScope.() -> T) {
         type = ApiStateType.LOADING
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {

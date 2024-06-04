@@ -11,6 +11,7 @@ import com.example.findlostitemapp.exceptions.ApiExceptions
 import com.example.findlostitemapp.exceptions.AuthExceptions
 import com.example.findlostitemapp.utils.FileUtils
 import com.google.gson.Gson
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -190,11 +191,11 @@ fun rememberChangeUserAvatarState(): ChangeUserAvatarState {
         val avatarPart = MultipartBody.Part.createFormData(
             "avatar",
             file.name,
-            file.asRequestBody("image/*".toMediaType())
+            file.asRequestBody("image/${file.extension}".toMediaType())
         )
         state.execute {
             try {
-                val res = services.changeAvatar(avatarPart)
+                val res = services.changeAvatar(avatar = avatarPart)
                 println(res.body())
                 if (res.isSuccessful) {
                     val data = res.body()?.data!!
@@ -203,6 +204,7 @@ fun rememberChangeUserAvatarState(): ChangeUserAvatarState {
                     val error = Gson().fromJson<Http.Error<String>>(res.errorBody()?.string(), Http.Error::class.java)
                     when (error.code) {
                         401 -> throw AuthExceptions.Unauthorized()
+                        400 -> throw ApiExceptions.MissingParameter(error.error)
                         else -> throw ApiExceptions.InternalServerError()
                     }
                 }
@@ -215,6 +217,58 @@ fun rememberChangeUserAvatarState(): ChangeUserAvatarState {
 
     return remember(state) {
         ChangeUserAvatarState(
+            state = state,
+            execute = ::execute
+        )
+    }
+}
+
+data class UpdateUserState(
+    val state: ApiState<User.Instance>,
+    val execute: (String, User.Register) -> Unit
+)
+
+@Composable
+fun rememberUploadUserState(): UpdateUserState {
+    val state = rememberApiState<User.Instance>()
+    val services = UserServices.getInstance(LocalContext.current)
+    fun execute(uuid: String, user: User.Register) {
+        state.execute {
+            launch {
+                if (user.avatar != null) {
+                    try {
+                        val res = services.changeAvatar(avatar = user.getAvatar()!!, uuid = uuid)
+                        println(res.body())
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        throw e
+                    }
+                }
+            }
+            try {
+                val res = services.updateUser(uuid, user)
+                println(res.body())
+                if (res.isSuccessful) {
+                    val data = res.body()?.data!!
+                    data
+                } else {
+                    val error = Gson().fromJson<Http.Error<String>>(res.errorBody()?.string(), Http.Error::class.java)
+                    when (error.code) {
+                        401 -> throw AuthExceptions.Unauthorized()
+                        409 -> throw AuthExceptions.UserAlreadyExists()
+                        400 -> throw ApiExceptions.MissingParameter(error.error)
+                        else -> throw ApiExceptions.InternalServerError()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    return remember(state) {
+        UpdateUserState(
             state = state,
             execute = ::execute
         )

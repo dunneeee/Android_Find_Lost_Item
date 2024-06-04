@@ -190,7 +190,7 @@ fun UploadPostScreenContent(modifier: Modifier = Modifier) {
         }
 
         UploadPostCard(leadingIcon = {
-            Icon(Icons.Default.LocationOn, contentDescription = "Location Icon")
+            Icon(Icons.Default.LocationOn, contentDescription = "Location Icon", tint = Color.White)
         }, title = "Địa điểm", modifier = Modifier.padding(16.dp)) {
             UploadPostTextField(
                 value =
@@ -205,9 +205,9 @@ fun UploadPostScreenContent(modifier: Modifier = Modifier) {
 
 
     UploadPostCard(leadingIcon = {
-        Icon(Icons.Default.MailOutline, contentDescription = "Mail Icon")
+        Icon(Icons.Default.MailOutline, contentDescription = "Mail Icon", tint = Color.White)
     }, title = "Thêm hình ảnh", modifier = Modifier.padding(16.dp)) {
-        ImageUpload(
+        ImageUpload<String>(
             selectedImages = selectedImages.value, onImagesSelected = onImagesSelected, onImageClick =
             onImageClick
         )

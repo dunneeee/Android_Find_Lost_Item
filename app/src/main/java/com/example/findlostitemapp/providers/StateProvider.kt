@@ -4,7 +4,9 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun StateProvider(content: @Composable () -> Unit) {
-    NotificationProvider {
-        content()
+    AuthStoreProvider {
+        NotificationProvider {
+            content()
+        }
     }
 }

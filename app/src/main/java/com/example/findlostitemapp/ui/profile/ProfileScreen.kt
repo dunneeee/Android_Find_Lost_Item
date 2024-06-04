@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.findlostitemapp.navigation.LocalNavProvider
+import com.example.findlostitemapp.providers.AuthAction
+import com.example.findlostitemapp.providers.LocalAuthStore
 import com.example.findlostitemapp.ui.approvePost.ApprovePostNavigation
 import com.example.findlostitemapp.ui.auth.AuthLocalStore
 import com.example.findlostitemapp.ui.auth.AuthNavigation
@@ -58,12 +60,8 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
 @Composable
 fun ProfileContent(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-
-    val authStorage = AuthLocalStore(context)
-    val user = remember {
-        authStorage.getUser()
-    }
-
+    val authStore = LocalAuthStore.current
+    val user = authStore.getState().user
     val items = remember {
         val list = mutableListOf<ProfileItemData>()
         if (user != null && user.isAdmin) {
@@ -74,6 +72,10 @@ fun ProfileContent(modifier: Modifier = Modifier) {
     }
 
     val navigation = LocalNavProvider.current
+
+    val handleUserClick = {
+        navigation.navigate(AuthNavigation.uploadAvatarRoute.path)
+    }
 
     val handleProfileItemClick = { item: ProfileItemData ->
         when (item.represent) {
@@ -87,7 +89,7 @@ fun ProfileContent(modifier: Modifier = Modifier) {
                 navigation.navigate(UserManagerNavigation.route.path)
 
             ProfileItemData.ProfileItem.Logout -> {
-                authStorage.logout()
+                authStore.dispatch(AuthAction.Logout)
                 navigation.navigate(HomeNavigation.route.path) {
                     popUpTo(HomeNavigation.route.path) {
                         inclusive = true
@@ -103,7 +105,8 @@ fun ProfileContent(modifier: Modifier = Modifier) {
 
     LazyColumn(modifier = modifier) {
         item {
-            if (user != null) User(user = user, avatarSize = UserAvatarSize.Large, modifier = Modifier.padding(16.dp))
+            if (user != null) User(user = user, avatarSize = UserAvatarSize.Large, modifier = Modifier.padding(16.dp)
+                , onClick = handleUserClick)
         }
 
         items(items.size) { index ->

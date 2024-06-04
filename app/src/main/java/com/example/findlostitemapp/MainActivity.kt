@@ -36,7 +36,6 @@ val LocalSnackBar = compositionLocalOf<SnackbarHostState> {
     error("No SnackBar provided")
 }
 
-
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()

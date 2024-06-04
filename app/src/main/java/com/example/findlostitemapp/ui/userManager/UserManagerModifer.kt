@@ -64,6 +64,10 @@ fun UserManagerModifier(
         mutableStateOf<List<Uri>>(emptyList())
     }
 
+    var imagePreview by remember {
+        mutableStateOf<String?>(null)
+    }
+
     println("UserManagerModifier: Re-Render")
 
     val handleConfirm = {
@@ -92,6 +96,7 @@ fun UserManagerModifier(
 
     val handleSelectImage = { images: List<Uri> ->
         selectedImages = images
+        imagePreview = null
     }
 
     val handleImageClick = { uri: Uri ->
@@ -117,14 +122,16 @@ fun UserManagerModifier(
             formState.setValue("isAdmin", TextFieldValue(if (user.isAdmin) "1" else "0"))
             selectedOption = options.find { it.value == if (user.isAdmin) "1" else "0" }!!
             formState.unregisterField(AuthValidators.Keys.PASSWORD)
-            selectedImages = listOf(user.avatar.toUri())
+            imagePreview = user.avatar
         } else {
             formState.registerField(AuthValidators.loginValidator[1])
             formState.clear()
             formState.setValue("isAdmin", TextFieldValue("0"))
             selectedOption = options[1]
-            selectedImages = emptyList()
+            imagePreview = null
         }
+
+        selectedImages = emptyList()
     }
 
     if (open) {
@@ -178,7 +185,8 @@ fun UserManagerModifier(
 
                 ImageUpload(
                     selectedImages = selectedImages, onImagesSelected = handleSelectImage, singleImage =
-                    true, onImageClick = handleImageClick
+                    true, onImageClick = handleImageClick,
+                    previewImages = if (imagePreview != null) listOf(imagePreview!!.toUri()) else emptyList()
                 )
             }
         }, modifier = modifier.fillMaxWidth())

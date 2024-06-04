@@ -13,12 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -29,17 +26,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.findlostitemapp.LocalSnackBar
 import com.example.findlostitemapp.domain.model.NotificationArgs
+import com.example.findlostitemapp.domain.model.User
 import com.example.findlostitemapp.hooks.rememberChangeUserAvatarState
 import com.example.findlostitemapp.hooks.rememberImageResultLauncher
 import com.example.findlostitemapp.navigation.LocalNavProvider
+import com.example.findlostitemapp.providers.AuthAction
+import com.example.findlostitemapp.providers.LocalAuthStore
 import com.example.findlostitemapp.providers.LocalNotification
 import com.example.findlostitemapp.ui.home.HomeNavigation
-import com.example.findlostitemapp.ui.theme.FindLostItemAppTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun AvatarUploadScreen() {
@@ -47,6 +47,7 @@ fun AvatarUploadScreen() {
     val navigation = LocalNavProvider.current
     val notifyState = LocalNotification.current
     val snackBarState = LocalSnackBar.current
+    val authStore = LocalAuthStore.current
     val handleUploadAvatar = { uri: Uri? ->
         if (uri != null) {
             uploadState.execute(uri)
@@ -68,7 +69,15 @@ fun AvatarUploadScreen() {
         }
 
         if (uploadState.state.isSuccess) {
-            snackBarState.showSnackbar("Tải ảnh lên thành công", duration = SnackbarDuration.valueOf("2000"))
+            launch {
+                authStore.dispatch(AuthAction.ChangeAvatar(uploadState.state.data?.avatar!!))
+            }
+            launch {
+                snackBarState.showSnackbar(
+                    "Tải ảnh lên thành công", duration = SnackbarDuration.Short, withDismissAction
+                    = true
+                )
+            }
             navigation.navigate(HomeNavigation.route.path)
         }
 
@@ -82,7 +91,7 @@ fun AvatarUploadScreen() {
                 .fillMaxSize()
                 .padding(paddingValues),
             onUploadClick = handleUploadAvatar,
-            isUploading = uploadState.state.isLoading
+            isUploading = uploadState.state.isLoading,
         )
     }
 }
@@ -94,13 +103,20 @@ fun AvatarUploadContent(
     Unit = {},
     isUploading: Boolean = false
 ) {
+    val user = LocalAuthStore.current.getState().user!!
     var imageSelected by remember {
         mutableStateOf<Uri?>(null)
     }
 
-    val launcher = rememberImageResultLauncher() { uri ->
-        imageSelected = uri
-        onImageSelected(uri)
+    val canUpload = imageSelected != null && !isUploading && user.avatar != imageSelected.toString()
+
+    val launcher = rememberImageResultLauncher() {
+        imageSelected = it
+        onImageSelected(it)
+    }
+
+    LaunchedEffect(Unit) {
+        imageSelected = Uri.parse(user.avatar)
     }
 
     Surface(modifier = modifier) {
@@ -127,7 +143,7 @@ fun AvatarUploadContent(
             Button(
                 onClick = { onUploadClick(imageSelected) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isUploading
+                enabled = canUpload
             ) {
                 Text(text = "Tải ảnh lên")
             }
@@ -140,15 +156,5 @@ fun AvatarUploadContent(
 fun AvatarUploadTopBar(modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(title = {
         Text(text = "Tải ảnh đại diện")
-    }, navigationIcon = {
-        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
     }, modifier = modifier)
-}
-
-@Preview
-@Composable
-private fun AvatarUploadPreview() {
-    FindLostItemAppTheme {
-        AvatarUploadScreen()
-    }
 }

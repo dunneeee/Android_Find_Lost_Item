@@ -28,21 +28,22 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.findlostitemapp.domain.model.Post
 import com.example.findlostitemapp.hooks.rememberImageResultLauncher
 import com.example.findlostitemapp.hooks.rememberImagesResultLauncher
-import com.example.findlostitemapp.ui.theme.FindLostItemAppTheme
 
 @Composable
-fun ImageUpload(
+fun <PreviewType> ImageUpload(
     modifier: Modifier = Modifier, selectedImages: List<Uri> = emptyList(), onImagesSelected: (
         List<Uri>
     )
     -> Unit = {},
     onImageClick: (Uri) -> Unit = {},
-    singleImage: Boolean = false
+    singleImage: Boolean = false,
+    previewImages: List<PreviewType> = emptyList(),
+    onPreviewImageClick: (PreviewType) -> Unit = {}
 ) {
     val strokeColor = MaterialTheme.colorScheme.onPrimary
     val stroke = Stroke(width = 4.dp.value, pathEffect = getLinePathEffect())
@@ -50,6 +51,12 @@ fun ImageUpload(
     val rows = remember(selectedImages) {
         derivedStateOf {
             selectedImages.chunked(3)
+        }
+    }
+
+    val previewRows = remember(previewImages) {
+        derivedStateOf {
+            previewImages.chunked(3)
         }
     }
 
@@ -78,6 +85,28 @@ fun ImageUpload(
                         text = "Nhấn vào hình ảnh để xóa", modifier = Modifier.padding(8.dp), style = MaterialTheme
                             .typography.bodyMedium.copy(fontStyle = FontStyle.Italic)
                     )
+                }
+                previewRows.value.forEach { row ->
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        row.forEach { image ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(100.dp)
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .clickable {
+                                        onPreviewImageClick(image)
+                                    }
+                            ) {
+                                AsyncImage(
+                                    model = image,
+                                    contentDescription = "Image $image",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+                    }
                 }
                 rows.value.forEach { row ->
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -113,13 +142,4 @@ fun ImageUpload(
 
 private fun getLinePathEffect(): PathEffect {
     return PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-}
-
-
-@Preview
-@Composable
-private fun ImageUploadPreview() {
-    FindLostItemAppTheme {
-        ImageUpload()
-    }
 }

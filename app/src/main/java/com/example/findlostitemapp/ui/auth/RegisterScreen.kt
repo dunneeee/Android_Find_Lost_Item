@@ -38,6 +38,8 @@ import com.example.findlostitemapp.ui.home.HomeNavigation
 import com.example.findlostitemapp.hooks.rememberFormState
 import com.example.findlostitemapp.hooks.rememberLoginState
 import com.example.findlostitemapp.hooks.rememberRegisterState
+import com.example.findlostitemapp.providers.AuthAction
+import com.example.findlostitemapp.providers.LocalAuthStore
 import java.io.File
 
 @Composable
@@ -56,9 +58,9 @@ fun RegisterContent(modifier: Modifier = Modifier) {
     }
     val registerState = rememberRegisterState()
     val loginState = rememberLoginState()
-    val authStore = AuthLocalStore(LocalContext.current)
     val notifyState = LocalNotification.current
     val navigation = LocalNavProvider.current
+    val authStore = LocalAuthStore.current
 
     val handleLoginClicked = {
         navigation.navigate(AuthNavigation.loginRoute.path) {
@@ -119,9 +121,8 @@ fun RegisterContent(modifier: Modifier = Modifier) {
         }
 
         if (loginState.state.isSuccess) {
-            authStore.saveToken(loginState.token)
             val user = loginState.state.data!!
-            authStore.saveUser(user)
+            authStore.dispatch(AuthAction.LoginSuccess(user = user, token = loginState.token))
             navigation.navigate(AuthNavigation.uploadAvatarRoute.path)
         }
     }

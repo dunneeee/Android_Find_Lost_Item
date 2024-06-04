@@ -82,7 +82,7 @@ fun HomeSearch(modifier: Modifier = Modifier, onSearchClick: (SearchData) -> Uni
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    onSearchClick(SearchData(itemName, location, topicState.selected.value))
+                    onSearchClick(SearchData(itemName.trim(), location.trim(), topicState.selected.value))
                 },
                 modifier = Modifier
                     .fillMaxWidth()

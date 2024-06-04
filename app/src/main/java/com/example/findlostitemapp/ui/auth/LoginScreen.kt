@@ -1,6 +1,5 @@
 package com.example.findlostitemapp.ui.auth
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +41,8 @@ import com.example.findlostitemapp.ui.components.CustomTextField
 import com.example.findlostitemapp.ui.home.HomeNavigation
 import com.example.findlostitemapp.hooks.rememberFormState
 import com.example.findlostitemapp.hooks.rememberLoginState
+import com.example.findlostitemapp.providers.AuthAction
+import com.example.findlostitemapp.providers.LocalAuthStore
 
 
 @Composable
@@ -57,10 +57,9 @@ fun LoginScreen() {
 fun LoginContent(modifier: Modifier = Modifier) {
     var openPasswordForget by remember { mutableStateOf(false) }
 
-    val authStore = AuthLocalStore(LocalContext.current)
     val notificationState = LocalNotification.current
     val navigation = LocalNavProvider.current
-
+    val authStore = LocalAuthStore.current
     val loginState = rememberLoginState()
 
     val formState = rememberFormState(TextFieldValue("")) {
@@ -86,9 +85,8 @@ fun LoginContent(modifier: Modifier = Modifier) {
 
     LaunchedEffect(loginState.state.type) {
         if (loginState.state.isSuccess) {
-            authStore.saveToken(loginState.token)
             val user = loginState.state.data!!
-            authStore.saveUser(user)
+            authStore.dispatch(AuthAction.LoginSuccess(user = user, token = loginState.token))
             navigation.navigate(HomeNavigation.route.path)
         }
 
